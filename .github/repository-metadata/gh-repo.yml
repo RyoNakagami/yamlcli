@@ -1,0 +1,6 @@
+meta-data:
+  tag:
+    - cli-tool
+    - yaml-parser
+  description: |
+    A command-line tool to convert between YAML and JSON formats.
