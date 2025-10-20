@@ -1,0 +1,122 @@
+# AUTHOR: RyoNak
+# UPDATE: 2025-01-20
+# ---------------------
+# General
+# ---------------------
+sandbox/
+tmp/
+
+# config
+# .editorconfig
+
+# Sensitive
+config/
+*.gpg
+
+# BFG Repo-Cleaner settings
+.bfg/
+..bfg-report
+bfg_check_list/
+
+# Envrionments
+.env
+env/
+ENV/
+env.bak/
+
+# Ignore cache/temporary files
+.DS_Store
+*.bak
+*.swp
+*.tmp
+*.bak
+*.old
+
+# Ignore log files
+logs
+*.log
+
+# Ignore directories
+node_modules/
+vendor/
+
+# ---------------------
+# Python
+# ---------------------
+# Python Environment
+.python-version
+venv/
+.venv/
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+
+# linter cache
+.ruff_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Distribution / Packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.pytest_cache
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# ruff cache
+.ruff_cache
+
+# Cython debug symbols
+cython_debug/
+
+
+# ---------------------
+# Python package
+# ---------------------
+*.lock
