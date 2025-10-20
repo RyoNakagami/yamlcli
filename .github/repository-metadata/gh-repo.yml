@@ -1,0 +1,11 @@
+meta-data:
+  tag:
+    - cli-tool
+    - command-line
+    - uv
+    - uvx
+    - yaml
+    - json
+    - python
+  description: |
+    A command-line tool to convert between YAML and JSON formats.
