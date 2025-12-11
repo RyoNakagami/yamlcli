@@ -1,7 +1,7 @@
 ---
 author: "Ryo Nakagami"
 date-modified: "2025-12-10"
-project: byobu-config
+project: yamlcli
 ---
 
 # Branch Strategy

@@ -9,14 +9,6 @@ from yamlcli.library.version import __version__
 
 app = typer.Typer(
     add_completion=False,
-    help=(
-        "A simple command-line tool to convert between YAML and JSON formats.\n\n"
-        "Features:\n"
-        "- Convert YAML files to JSON\n"
-        "- Convert JSON files to YAML\n"
-        "- Support for custom JSON indentation\n"
-        "- Robust error handling for invalid files or malformed data"
-    ),
 )
 
 def version_callback(value: bool):
@@ -41,7 +33,14 @@ def converter(
         is_eager=True,
     ),
 ):
-    """Main entry point for yamlcli"""
+    """
+    A simple command-line tool to convert between YAML and JSON formats.\n\n
+    Features:\n
+    - Convert YAML files to JSON\n
+    - Convert JSON files to YAML\n
+    - Support for custom JSON indentation\n
+    - Robust error handling for invalid files or malformed data
+    """
     # 排他チェック（pytest 要求）
     if (not to_json and not to_yaml) or (to_json and to_yaml):
         typer.echo("Error: Specify exactly one of --to-json or --to-yaml", err=True)
