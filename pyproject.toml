@@ -9,10 +9,11 @@ authors = [
 ]
 dependencies = [
     "pyyaml",
+    "typer>=0.20.0",
 ]
 
 [project.scripts]
-yamlcli = "yamlcli.cli:main"
+yamlcli = "yamlcli:main"
 
 [build-system]
 requires = ["uv_build>=0.9.11,<0.10.0"]
