@@ -1,26 +1,27 @@
 [project]
 name = "yamlcli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Convert YAML files to JSON and vice versa"
 requires-python = ">=3.10,<4.0"
 readme = "README.md"
+authors = [
+    { name = "RyoNak", email = "nakagamiryo0901@gmail.com" }
+]
 dependencies = [
     "pyyaml",
 ]
+
+[project.scripts]
+yamlcli = "yamlcli.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.9.11,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--cov=src --cov-report=term-missing"
-
-[project.entry-points.console_scripts]
-yamlcli = "yamlcli:main"
-
-
-[build-system]
-requires = ["setuptools>=65", "wheel"]
-build-backend = "setuptools.build_meta"
-tool.uv.package = true
 
 [dependency-groups]
 dev = [

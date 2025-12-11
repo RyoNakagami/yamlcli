@@ -1,4 +1,7 @@
 meta-data:
+  repository_name: yamlcli
+  visibility: public
+  org-name: RyoNakagami
   tag:
     - cli-tool
     - command-line
@@ -9,3 +12,4 @@ meta-data:
     - python
   description: |
     A command-line tool to convert between YAML and JSON formats.
+  license: mit
