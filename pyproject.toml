@@ -10,6 +10,7 @@ authors = [
 dependencies = [
     "pyyaml",
     "typer>=0.20.0",
+    "types-pyyaml>=6.0.12.20250915",
 ]
 
 [project.scripts]
@@ -27,5 +28,5 @@ addopts = "--cov=src --cov-report=term-missing"
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",
-    "pytest-cov>=4.0"
+    "pytest-cov>=4.0",
 ]
