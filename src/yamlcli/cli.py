@@ -1,72 +1,77 @@
 import sys
-import yaml
 import json
-import argparse
+from pathlib import Path
+import yaml
+import typer
+
+from yamlcli.yamlcli_core import yaml_to_json, json_to_yaml
+from yamlcli.library.version import __version__
+
+app = typer.Typer(
+    add_completion=False,
+    help=(
+        "A simple command-line tool to convert between YAML and JSON formats.\n\n"
+        "Features:\n"
+        "- Convert YAML files to JSON\n"
+        "- Convert JSON files to YAML\n"
+        "- Support for custom JSON indentation\n"
+        "- Robust error handling for invalid files or malformed data"
+    ),
+)
+
+def version_callback(value: bool):
+    if value:
+        print(f"yamlcli {__version__}")
+        print(f"Python {sys.version.split()[0]}")
+        raise typer.Exit()
 
 
-class RegmonkeyDumper(yaml.Dumper):
-    def increase_indent(self, flow=False, indentless=False):
-        return super(RegmonkeyDumper, self).increase_indent(flow, False)
+@app.command()
+def converter(
+    file: str = typer.Argument(..., help="Input file path"),
+    to_json: bool = typer.Option(False, "--to-json", help="Convert YAML → JSON"),
+    to_yaml: bool = typer.Option(False, "--to-yaml", help="Convert JSON → YAML"),
+    indent: int = typer.Option(2, "--indent", help="Indentation level (default: 2)"),
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-v",
+        help="Show version information and exit.",
+        callback=version_callback,
+        is_eager=True,
+    ),
+):
+    """Main entry point for yamlcli"""
+    # 排他チェック（pytest 要求）
+    if (not to_json and not to_yaml) or (to_json and to_yaml):
+        typer.echo("Error: Specify exactly one of --to-json or --to-yaml", err=True)
+        raise typer.Exit(code=1)
 
+    if not Path(file).exists():
+        typer.echo(f"Error: File not found - {file}", err=True)
+        raise typer.Exit(code=1)
 
-def yaml_to_json(file_path, indent):
-    with open(file_path, "r") as f:
-        data = yaml.safe_load(f)
+    try:
+        if to_yaml:
+            json_to_yaml(file, indent)
+        else:
+            yaml_to_json(file, indent)
 
-    if indent <= 0:
-        print(json.dumps(data))
-    else:
-        print(json.dumps(data, indent=indent))
+    except yaml.YAMLError as e:
+        typer.echo(f"Error: Parsing failed - {e}", err=True)
+        raise typer.Exit(code=1)
 
+    except json.JSONDecodeError as e:
+        typer.echo(f"Error: Parsing failed - {e}", err=True)
+        raise typer.Exit(code=1)
 
-def json_to_yaml(file_path, indent):
-    with open(file_path, "r") as f:
-        data = json.load(f)
-
-    if indent <= 0:
-        print(yaml.safe_dump(data, sort_keys=False))
-    else:
-        # Dump YAML with 2-space indentation for lists
-        print(
-            yaml.dump(
-                data,
-                Dumper=RegmonkeyDumper,
-                sort_keys=False,
-                default_flow_style=False,
-                indent=indent,
-            )
-        )
+    except FileNotFoundError:
+        typer.echo(f"Error: File not found - {file}", err=True)
+        raise typer.Exit(code=1)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert YAML ↔ JSON")
-    parser.add_argument("file", help="Input file path")
-    parser.add_argument("--to-json", action="store_true", help="Convert YAML to JSON")
-    parser.add_argument("--to-yaml", action="store_true", help="Convert JSON to YAML")
-    parser.add_argument(
-        "--indent",
-        type=int,
-        default=2,
-        help="Indentation level for JSON output (default: 2)",
-    )
-    args = parser.parse_args()
-
-    if args.to_json == args.to_yaml:
-        print("Error: Specify exactly one of --to-json or --to-yaml", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        if args.to_yaml:
-            json_to_yaml(args.file, args.indent)
-        else:
-            yaml_to_json(args.file, args.indent)
-    except FileNotFoundError:
-        print(f"Error: File not found - {args.file}", file=sys.stderr)
-        sys.exit(1)
-    except (yaml.YAMLError, json.JSONDecodeError) as e:
-        print(f"Error: Parsing failed - {e}", file=sys.stderr)
-        sys.exit(1)
-
+    app()
 
 if __name__ == "__main__":
-    main()
+    app()
