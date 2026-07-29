@@ -11,7 +11,8 @@ app = typer.Typer(
     add_completion=False,
 )
 
-def version_callback(value: bool):
+def version_callback(value: bool) -> None:
+    """Print version information and exit when --version is given."""
     if value:
         print(f"yamlcli {__version__}")
         print(f"Python {sys.version.split()[0]}")
@@ -41,8 +42,7 @@ def converter(
     - Support for custom JSON indentation\n
     - Robust error handling for invalid files or malformed data
     """
-    # 排他チェック（pytest 要求）
-    if (not to_json and not to_yaml) or (to_json and to_yaml):
+    if to_json == to_yaml:
         typer.echo("Error: Specify exactly one of --to-json or --to-yaml", err=True)
         raise typer.Exit(code=1)
 
@@ -56,11 +56,7 @@ def converter(
         else:
             yaml_to_json(file, indent)
 
-    except yaml.YAMLError as e:
-        typer.echo(f"Error: Parsing failed - {e}", err=True)
-        raise typer.Exit(code=1)
-
-    except json.JSONDecodeError as e:
+    except (yaml.YAMLError, json.JSONDecodeError) as e:
         typer.echo(f"Error: Parsing failed - {e}", err=True)
         raise typer.Exit(code=1)
 
@@ -69,7 +65,7 @@ def converter(
         raise typer.Exit(code=1)
 
 
-def main():
+def main() -> None:
     app()
 
 if __name__ == "__main__":

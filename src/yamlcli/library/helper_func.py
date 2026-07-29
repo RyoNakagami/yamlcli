@@ -1,6 +1,10 @@
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-import tomllib
-from importlib.metadata import version, PackageNotFoundError
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    tomllib = None  # type: ignore[assignment]
 
 
 def get_version() -> str:
@@ -20,18 +24,19 @@ def get_version() -> str:
         pass
 
     # 2. [DEBUG]: Development mode: look for pyproject.toml
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        pyproject = parent / "pyproject.toml"
-        if pyproject.exists():
-            try:
-                with pyproject.open("rb") as f:
-                    data = tomllib.load(f)
+    if tomllib is not None:
+        current = Path(__file__).resolve()
+        for parent in current.parents:
+            pyproject = parent / "pyproject.toml"
+            if pyproject.exists():
+                try:
+                    with pyproject.open("rb") as f:
+                        data = tomllib.load(f)
+                except (OSError, tomllib.TOMLDecodeError):
+                    continue
                 project_version = data.get("project", {}).get("version")
                 if project_version:
                     return project_version
-            except Exception:
-                pass
 
     # 3. [DEBUG]: fallback
     return "0.0.0"
