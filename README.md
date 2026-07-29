@@ -25,7 +25,20 @@ yamlcli input.json --to-yaml
 ## Install via `uv tool`
 
 ```bash
+# Install the latest version from the GitHub repository
 uv tool install git+https://github.com/RyoNakagami/yamlcli.git
+
+# Install the branch-specific version
+uv tool install git+https://github.com/RyoNakagami/yamlcli.git@develop
+
+# Install the tagged version
+uv tool install git+https://github.com/RyoNakagami/yamlcli.git@v0.2.0
+```
+
+## Upgrade
+
+```bash
+uv tool upgrade yamlcli
 ```
 
 ## Uninstall
