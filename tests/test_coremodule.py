@@ -1,42 +1,81 @@
 import pytest
 import json
 import yaml
-import tempfile
-import os
-from yamlcli.yamlcli_core import yaml_to_json, json_to_yaml
 
-@pytest.fixture
-def sample_yaml_file():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".yaml") as f:
-        f.write("""
-name: John Doe
-age: 30
-hobbies:
-  - reading
-  - coding
-address:
-  street: 123 Main St
-  city: Example City
-""")
-    yield f.name
-    os.unlink(f.name)
+from yamlcli.yamlcli_core import (
+    convert_json_to_yaml,
+    convert_yaml_to_json,
+    json_to_yaml,
+    yaml_to_json,
+)
+
+from tests.expected_outputs import (
+    EXPECTED_JSON_COMPACT,
+    EXPECTED_JSON_INDENT2,
+    EXPECTED_JSON_INDENT4,
+    EXPECTED_YAML_COMPACT,
+    EXPECTED_YAML_INDENT2,
+    SAMPLE_DATA,
+    SAMPLE_YAML,
+)
 
 
-@pytest.fixture
-def sample_json_file():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
-        json.dump(
-            {
-                "name": "John Doe",
-                "age": 30,
-                "hobbies": ["reading", "coding"],
-                "address": {"street": "123 Main St", "city": "Example City"},
-            },
-            f,
-            indent=2,
-        )
-    yield f.name
-    os.unlink(f.name)
+# ---------------------------------------------------------------------------
+# Pure conversion functions (str -> str)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    ("indent", "expected"),
+    [
+        (0, EXPECTED_JSON_COMPACT),
+        (2, EXPECTED_JSON_INDENT2),
+        (4, EXPECTED_JSON_INDENT4),
+    ],
+)
+def test_convert_yaml_to_json_exact(indent, expected):
+    assert convert_yaml_to_json(SAMPLE_YAML, indent=indent) == expected
+
+
+def test_convert_yaml_to_json_negative_indent_is_compact():
+    assert convert_yaml_to_json(SAMPLE_YAML, indent=-1) == EXPECTED_JSON_COMPACT
+
+
+@pytest.mark.parametrize(
+    ("indent", "expected"),
+    [
+        (0, EXPECTED_YAML_COMPACT),
+        (2, EXPECTED_YAML_INDENT2),
+    ],
+)
+def test_convert_json_to_yaml_exact(indent, expected):
+    text = json.dumps(SAMPLE_DATA)
+    assert convert_json_to_yaml(text, indent=indent) == expected
+
+
+def test_convert_json_to_yaml_preserves_key_order():
+    text = '{"zebra": 1, "apple": 2, "mango": 3}'
+    assert convert_json_to_yaml(text, indent=2) == "zebra: 1\napple: 2\nmango: 3\n"
+
+
+def test_convert_roundtrip_yaml_json_yaml():
+    json_text = convert_yaml_to_json(SAMPLE_YAML, indent=2)
+    yaml_text = convert_json_to_yaml(json_text, indent=2)
+    assert yaml.safe_load(yaml_text) == SAMPLE_DATA
+
+
+def test_convert_yaml_to_json_invalid_yaml_raises():
+    with pytest.raises(yaml.YAMLError):
+        convert_yaml_to_json("key: [unclosed", indent=2)
+
+
+def test_convert_json_to_yaml_invalid_json_raises():
+    with pytest.raises(json.JSONDecodeError):
+        convert_json_to_yaml("{not json}", indent=2)
+
+
+# ---------------------------------------------------------------------------
+# File-based wrappers (read + convert + print)
+# ---------------------------------------------------------------------------
 
 
 def test_yaml_to_json_basic(sample_yaml_file, capsys):

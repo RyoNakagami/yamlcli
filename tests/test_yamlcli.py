@@ -1,49 +1,13 @@
-import pytest
 import json
-import yaml
 import sys
-import tempfile
-import os
-import runpy
+
+import pytest
+import yaml
 from typer.testing import CliRunner
 
 from yamlcli.cli import app
 
 runner = CliRunner()
-
-
-@pytest.fixture
-def sample_yaml_file():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".yaml") as f:
-        f.write("""
-name: John Doe
-age: 30
-hobbies:
-  - reading
-  - coding
-address:
-  street: 123 Main St
-  city: Example City
-""")
-    yield f.name
-    os.unlink(f.name)
-
-
-@pytest.fixture
-def sample_json_file():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
-        json.dump(
-            {
-                "name": "John Doe",
-                "age": 30,
-                "hobbies": ["reading", "coding"],
-                "address": {"street": "123 Main St", "city": "Example City"},
-            },
-            f,
-            indent=2,
-        )
-    yield f.name
-    os.unlink(f.name)
 
 
 def test_cli_to_json(sample_yaml_file):
@@ -99,10 +63,10 @@ def test_main_yaml_error(tmp_path, monkeypatch):
     tmp_file = tmp_path / "valid.yaml"
     tmp_file.write_text("key: value")
 
-    # Force YAML error
+    # Force YAML error (patch only the module used by yamlcli_core)
     monkeypatch.setattr(
-        "yaml.safe_load",
-        lambda f: (_ for _ in ()).throw(yaml.YAMLError("mock YAML error")),
+        "yamlcli.yamlcli_core.yaml.safe_load",
+        lambda text: (_ for _ in ()).throw(yaml.YAMLError("mock YAML error")),
     )
 
     result = runner.invoke(app, [str(tmp_file), "--to-json"])
@@ -118,3 +82,39 @@ def test_main_file_not_found():
 
     assert result.exit_code != 0
     assert f"Error: File not found - {fake_file}" in result.stderr
+
+
+def test_main_json_decode_error(tmp_path):
+    invalid_json = tmp_path / "invalid.json"
+    invalid_json.write_text('{"invalid": "json", missing: quotes}')
+
+    result = runner.invoke(app, [str(invalid_json), "--to-yaml"])
+
+    assert result.exit_code != 0
+    assert "Error: Parsing failed" in result.stderr
+
+
+def test_main_file_removed_after_check(sample_yaml_file, monkeypatch):
+    # File passes the existence check but disappears before it is opened
+    def raise_file_not_found(file_path, indent):
+        raise FileNotFoundError(file_path)
+
+    monkeypatch.setattr("yamlcli.cli.yaml_to_json", raise_file_not_found)
+
+    result = runner.invoke(app, [sample_yaml_file, "--to-json"])
+
+    assert result.exit_code != 0
+    assert f"Error: File not found - {sample_yaml_file}" in result.stderr
+
+
+def test_main_entry_point(sample_yaml_file, monkeypatch, capsys):
+    from yamlcli.cli import main
+
+    monkeypatch.setattr(sys, "argv", ["yamlcli", sample_yaml_file, "--to-json"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+
+    assert exc_info.value.code == 0
+    parsed = json.loads(capsys.readouterr().out)
+    assert parsed["name"] == "John Doe"
