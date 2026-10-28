@@ -1,3 +1,4 @@
+import datetime
 import json
 from pathlib import Path
 
@@ -11,6 +12,13 @@ class RegmonkeyDumper(yaml.Dumper):
         return super().increase_indent(flow, False)
 
 
+def _json_default(obj: object) -> str:
+    """Serialize YAML timestamps (``date`` / ``datetime``) as ISO 8601 strings."""
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
+
 def convert_yaml_to_json(text: str, indent: int) -> str:
     """Convert a YAML document to a JSON string.
 
@@ -19,8 +27,8 @@ def convert_yaml_to_json(text: str, indent: int) -> str:
     data = yaml.safe_load(text)
 
     if indent <= 0:
-        return json.dumps(data)
-    return json.dumps(data, indent=indent)
+        return json.dumps(data, default=_json_default)
+    return json.dumps(data, indent=indent, default=_json_default)
 
 
 def convert_json_to_yaml(text: str, indent: int) -> str:

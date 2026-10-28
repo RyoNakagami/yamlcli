@@ -40,6 +40,35 @@ def test_convert_yaml_to_json_negative_indent_is_compact():
     assert convert_yaml_to_json(SAMPLE_YAML, indent=-1) == EXPECTED_JSON_COMPACT
 
 
+def test_convert_yaml_to_json_dates_as_iso_strings():
+    text = "start: 2026-04-02\nend: null\nat: 2026-04-02 10:30:00\n"
+    assert json.loads(convert_yaml_to_json(text, indent=0)) == {
+        "start": "2026-04-02",
+        "end": None,
+        "at": "2026-04-02T10:30:00",
+    }
+
+
+def test_convert_yaml_to_json_dates_with_indent():
+    text = "start: 2026-04-02\nend: null\n"
+    assert convert_yaml_to_json(text, indent=2) == (
+        '{\n  "start": "2026-04-02",\n  "end": null\n}'
+    )
+
+
+def test_convert_yaml_to_json_aware_datetime_keeps_offset():
+    text = "at: 2026-04-02 10:30:00+09:00\n"
+    assert json.loads(convert_yaml_to_json(text, indent=0)) == {
+        "at": "2026-04-02T10:30:00+09:00",
+    }
+
+
+def test_convert_yaml_to_json_other_unserializable_types_still_raise():
+    # !!binary is loaded as bytes, which is not a YAML timestamp
+    with pytest.raises(TypeError, match="Object of type bytes"):
+        convert_yaml_to_json("data: !!binary aGk=\n", indent=0)
+
+
 @pytest.mark.parametrize(
     ("indent", "expected"),
     [
