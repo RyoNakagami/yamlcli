@@ -25,6 +25,12 @@ def converter(
     to_json: bool = typer.Option(False, "--to-json", help="Convert YAML → JSON"),
     to_yaml: bool = typer.Option(False, "--to-yaml", help="Convert JSON → YAML"),
     indent: int = typer.Option(2, "--indent", help="Indentation level (default: 2)"),
+    ensure_ascii: bool = typer.Option(
+        True,
+        "--ensure-ascii/--no-ensure-ascii",
+        help="Escape non-ASCII characters (e.g. Japanese) as \\uXXXX. "
+        "Use --no-ensure-ascii to output them as-is.",
+    ),
     version: bool = typer.Option(
         False,
         "--version",
@@ -40,6 +46,7 @@ def converter(
     - Convert YAML files to JSON\n
     - Convert JSON files to YAML\n
     - Support for custom JSON indentation\n
+    - Output non-ASCII characters as-is with --no-ensure-ascii\n
     - Robust error handling for invalid files or malformed data
     """
     if to_json == to_yaml:
@@ -52,9 +59,9 @@ def converter(
 
     try:
         if to_yaml:
-            json_to_yaml(file, indent)
+            json_to_yaml(file, indent, ensure_ascii)
         else:
-            yaml_to_json(file, indent)
+            yaml_to_json(file, indent, ensure_ascii)
 
     except (yaml.YAMLError, json.JSONDecodeError) as e:
         typer.echo(f"Error: Parsing failed - {e}", err=True)

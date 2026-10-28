@@ -102,6 +102,33 @@ def test_convert_json_to_yaml_invalid_json_raises():
         convert_json_to_yaml("{not json}", indent=2)
 
 
+@pytest.mark.parametrize("indent", [0, 2])
+def test_convert_yaml_to_json_escapes_non_ascii_by_default(indent):
+    output = convert_yaml_to_json("名前: 山田\n", indent=indent)
+    assert "\\u540d\\u524d" in output
+    assert "名前" not in output
+
+
+@pytest.mark.parametrize("indent", [0, 2])
+def test_convert_yaml_to_json_keeps_non_ascii_when_disabled(indent):
+    output = convert_yaml_to_json("名前: 山田\n", indent=indent, ensure_ascii=False)
+    assert json.loads(output) == {"名前": "山田"}
+    assert "名前" in output
+
+
+@pytest.mark.parametrize("indent", [0, 2])
+def test_convert_json_to_yaml_escapes_non_ascii_by_default(indent):
+    output = convert_json_to_yaml('{"名前": "山田"}', indent=indent)
+    assert "名前" not in output
+    assert yaml.safe_load(output) == {"名前": "山田"}
+
+
+@pytest.mark.parametrize("indent", [0, 2])
+def test_convert_json_to_yaml_keeps_non_ascii_when_disabled(indent):
+    output = convert_json_to_yaml('{"名前": "山田"}', indent=indent, ensure_ascii=False)
+    assert output == "名前: 山田\n"
+
+
 # ---------------------------------------------------------------------------
 # File-based wrappers (read + convert + print)
 # ---------------------------------------------------------------------------

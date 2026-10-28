@@ -50,6 +50,33 @@ def test_cli_custom_indent(sample_yaml_file):
     assert any(line.startswith("    ") for line in lines)
 
 
+def test_cli_to_json_escapes_non_ascii_by_default(tmp_path):
+    path = tmp_path / "ja.yaml"
+    path.write_text("名前: 山田\n", encoding="utf-8")
+    result = runner.invoke(app, [str(path), "--to-json"])
+
+    assert result.exit_code == 0
+    assert result.stdout == '{\n  "\\u540d\\u524d": "\\u5c71\\u7530"\n}\n'
+
+
+def test_cli_to_json_no_ensure_ascii(tmp_path):
+    path = tmp_path / "ja.yaml"
+    path.write_text("名前: 山田\n", encoding="utf-8")
+    result = runner.invoke(app, [str(path), "--to-json", "--no-ensure-ascii"])
+
+    assert result.exit_code == 0
+    assert result.stdout == '{\n  "名前": "山田"\n}\n'
+
+
+def test_cli_to_yaml_no_ensure_ascii(tmp_path):
+    path = tmp_path / "ja.json"
+    path.write_text('{"名前": "山田"}', encoding="utf-8")
+    result = runner.invoke(app, [str(path), "--to-yaml", "--no-ensure-ascii"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "名前: 山田\n\n"
+
+
 def test_main_guard(sample_yaml_file):
     result = runner.invoke(app, [sample_yaml_file, "--to-json"])
 
@@ -96,7 +123,7 @@ def test_main_json_decode_error(tmp_path):
 
 def test_main_file_removed_after_check(sample_yaml_file, monkeypatch):
     # File passes the existence check but disappears before it is opened
-    def raise_file_not_found(file_path, indent):
+    def raise_file_not_found(file_path, indent, ensure_ascii):
         raise FileNotFoundError(file_path)
 
     monkeypatch.setattr("yamlcli.cli.yaml_to_json", raise_file_not_found)

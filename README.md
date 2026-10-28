@@ -7,6 +7,7 @@ A command-line tool to convert between YAML and JSON formats.
 - Convert YAML files to JSON format
 - Convert JSON files to YAML format
 - Customizable JSON indentation
+- Non-ASCII characters (e.g. Japanese) are escaped as `\uXXXX` by default (`--ensure-ascii`); use `--no-ensure-ascii` to output them as-is
 - Error handling for invalid files and formats
 
 ## Usage
@@ -20,6 +21,10 @@ yamlcli input.yaml --to-json --indent 4
 
 # Convert JSON to YAML
 yamlcli input.json --to-yaml
+
+# Non-ASCII characters are escaped as \uXXXX by default (--ensure-ascii).
+# Use --no-ensure-ascii to output them (e.g. Japanese) as-is
+yamlcli input.yaml --to-json --no-ensure-ascii
 ```
 
 ## Install via `uv tool`
