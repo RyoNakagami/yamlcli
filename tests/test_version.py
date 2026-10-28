@@ -26,14 +26,6 @@ def test_get_version_pyproject_fallback(monkeypatch):
     assert get_version() == expected
 
 
-def test_get_version_fallback_without_tomllib(monkeypatch):
-    # Simulate Python < 3.11 where tomllib is unavailable
-    monkeypatch.setattr(helper_func, "version", _raise_package_not_found)
-    monkeypatch.setattr(helper_func, "tomllib", None)
-
-    assert get_version() == "0.0.0"
-
-
 def test_get_version_skips_invalid_pyproject(tmp_path, monkeypatch):
     monkeypatch.setattr(helper_func, "version", _raise_package_not_found)
 

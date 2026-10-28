@@ -19,6 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.2.0] - 2026-10-28
+
+### Added
+
+- Tests for YAML date / datetime conversion (naive, timezone-aware, with indentation) and for unsupported types such as `!!binary` still raising `TypeError`
+
+### Changed
+
+- **BREAKING:** Minimum supported Python version is now 3.12 (was 3.10). Users who installed with `uv tool` on Python 3.10 / 3.11 should upgrade with `uv tool upgrade --python 3.12 yamlcli`
+
+### Removed
+
+- `tomllib` fallback for Python < 3.11 in `get_version()` and its corresponding test
+
+### Fixed
+
+- `--to-json` no longer fails with `TypeError: Object of type date is not JSON serializable` on YAML timestamps; `date` / `datetime` values are now emitted as ISO 8601 strings (e.g. `"2026-04-02"`, `"2026-04-02T10:30:00"`)
+
 ## [1.1.0] - 2026-07-29
 
 ### Added
